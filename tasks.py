@@ -59,36 +59,41 @@ tokenize("Hello\nworld\tthis\tis\na test") # ["hello", "world", "this", "is", "a
 
 # -----------------------------------------------
 ## TEST
+import unittest
 from tasks import *
 
-def test_token_counts():
-    text = """The quick brown fox jumps over the lazy dog. The fox and the dog play together. 
-              The fox chases the dog, but the dog runs quickly. The fox is fast, and the dog escapes."""
-    expected = {'the': 9, 'quick': 1, 'brown': 1, 'fox': 4, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 5, 
-                'and': 2, 'play': 1, 'together': 1, 'chases': 1, 'but': 1, 'runs': 1, 'quickly': 1, 
-                'is': 1, 'fast': 1, 'escapes': 1}
-    expected2 = {'the': 9, 'fox': 4, 'dog': 5, 'and': 2}
-    expected3 = {'the': 9, 'dog': 5}
+# lambda string: "".join([x for x in string.lower() if x in '\n\t abcdefghijklmnopqrstuvwxyz0123456789']).split()
+
+class TestTokenizeFunction(unittest.TestCase):
     
-    obtained = token_counts(text)
-    assert type(obtained) == dict, "expected return type 'dict' (k=1)"
-    assert set(obtained.keys()) == set(expected.keys()), "unexpected keys in dict (k=1)"
-    assert all(obtained[key] == expected[key] for key in expected), "unexpected counts (k=1)"
+    def test_basic_sentence(self):
+        self.assertEqual(tokenize("Hello, world!"), ["hello", "world"])
 
-    obtained = token_counts(text, 2)
-    assert type(obtained) == dict, "expected return type 'dict' (k=2)"
-    assert set(obtained.keys()) == set(expected2.keys()), "unexpected keys in dict (k=2)"
-    assert all(obtained[key] == expected2[key] for key in expected2), "unexpected counts (k=2)"
+    def test_mixed_case(self):
+        self.assertEqual(tokenize("HeLLo WoRLd"), ["hello", "world"])
 
-    obtained = token_counts(text, 5)
-    assert type(obtained) == dict, "expected return type 'dict' (k=5)"
-    assert set(obtained.keys()) == set(expected3.keys()), "unexpected keys in dict (k=5)"
-    assert all(obtained[key] == expected3[key] for key in expected3), "unexpected counts (k=5)"
+    def test_punctuation_removal(self):
+        self.assertEqual(tokenize("This, is a test!"), ["this", "is", "a", "test"])
 
-    obtained = token_counts(text, 10)
-    assert type(obtained) == dict, "expected return type 'dict' (k=10)"
-    assert obtained == {}
+    def test_extra_spaces(self):
+        self.assertEqual(tokenize("  Lots   of   spaces   "), ["lots", "of", "spaces"])
 
+    def test_empty_string(self):
+        self.assertEqual(tokenize(""), [])
+
+    def test_only_punctuation(self):
+        self.assertEqual(tokenize("!@#$%^&*()"), [])
+
+    def test_single_word(self):
+        self.assertEqual(tokenize("Word"), ["word"])
+
+    def test_special_characters(self):
+        self.assertEqual(tokenize("Hello @#%& world!"), ["hello", "world"])
+
+    def test_newlines_and_tabs(self):
+        self.assertEqual(tokenize("Hello\nworld\tthis\tis\na test"), ["hello", "world", "this", "is", "a", "test"])
+
+unittest.main()
 
 # [B] Dictionary Comprehensions: Frequency Count of Tokens
 #     Objective: Practice dictionary comprehensions for token frequency counts.
@@ -129,20 +134,22 @@ print(word_frequencies)
 # Your code here:
 # -----------------------------------------------
 def token_counts(string: str, k: int = 1) -> dict:
-  words = string.lower().split()
-  return {word: words.count(word) for word in sorted(words, reverse = True) if words.count(word) > k}
+  words = tokenize(string)
+  
+  counts = {}
+  for t in words:
+    counts[t] = counts.get(t, 0) + 1
+
+  filtered_counts = {word: count for word, count in counts.items() if count >= k}
+  return filtered_counts
 
 # test:
+text = "The quick brown fox jumps over the lazy dog!"
 text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 1}
 all(text_hist[key] == value for key, value in token_counts(text).items())
 
-text = "The quick brown fox jumps over the lazy dog. The fox and the dog play together. The fox chases the dog, but the dog runs quickly. The fox is fast, and the dog escapes."
-token_counts(text, 1)
-
 # -----------------------------------------------
 ## TEST
-
-from tasks import *
 
 def test_token_counts():
     text = """The quick brown fox jumps over the lazy dog. The fox and the dog play together. 
@@ -171,6 +178,7 @@ def test_token_counts():
     obtained = token_counts(text, 10)
     assert type(obtained) == dict, "expected return type 'dict' (k=10)"
     assert obtained == {}
+test_token_counts()    
 
 
 # [C] Sets & Dictionary comprehension: Mapping unique tokens to numbers and vice versa
@@ -228,28 +236,30 @@ assert all(id_to_token[token_to_id[key]]==key for key in token_to_id) and all(to
 def make_vocabulary_map(documents: list) -> tuple:
   #Add tokenize() function that makes tokens out of sentence
   def tokenize(documents: str) -> list:
-      punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
-      # Delete all non-letters
-      cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
-      # Split & lowercase
-      tokens = [word.lower() for word in cleaned.split()]
-      return tokens
+    punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
+    # Delete all non-letters
+    cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
+    # Split & lowercase
+    tokens = [word.lower() for word in cleaned.split()]
+    return tokens
     
   #Use the function on the inputted list
-  tokens = tokenize(documents[0])
+  tokens = [tokenize(i) for i in documents]
   
-  #Use already made dictionary comprehensions (token2int & int2token)
-  token_to_id = {word_id: id for id, word_id in enumerate(sorted(set(tokens)))}
+  #Global mapping
+  unique_tokens = sorted({token for i in tokens for token in i})
+  
+  #Token -> ID
+  token_to_id = {token: id for id, token in enumerate(unique_tokens)}
+  
+  #ID -> token
   id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+
   return token_to_id, id_to_token
-
-
+  
 # Test
 text = "The quick brown fox jumps over the lazy dog!"
 t2i, i2t = make_vocabulary_map([text])
-t2i
-i2t
-
 all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 
 # -----------------------------------------------
@@ -258,6 +268,7 @@ all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 def test_vocabulary_builder():
     t2i, i2t = make_vocabulary_map([text])
     assert all(i2t[t2i[tok]] == tok for tok in t2i), "something wrong with translation dicts"
+test_vocabulary_builder()
 
 # -----------------------------------------------
 
@@ -270,31 +281,38 @@ def test_vocabulary_builder():
 
 # Your code here:
 # -----------------------------------------------
+
 def tokenize_and_encode(documents: list) -> list:
-    #Add tokenize() function that makes tokens out of sentence
-    def tokenize(documents: str) -> list:
-        punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
-        # Delete all non-letters
-        cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
-        # Split & lowercase
-        tokens = [word.lower() for word in cleaned.split()]
-        return tokens
-    
-    enc = []
-    for i in range(len(documents)):
-      #Use the function on the inputted list
-      tokens = tokenize(documents[i])
+  #Add tokenize() function that makes tokens out of sentence
+  def tokenize(documents: str) -> list:
+    punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
+    # Delete all non-letters
+    cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
+    # Split & lowercase
+    tokens = [word.lower() for word in cleaned.split()]
+    return tokens
   
-      #Use already made dictionary comprehensions (token2int & int2token)
-      token_to_id = {word_id: id for id, word_id in enumerate(sorted(set(tokens)))}
-      id_to_token = {token_id: token for token, token_id in token_to_id.items()}
-      enc.append((tokens, token_to_id, id_to_token))
-    return enc
+  # Tokenize all documents
+  tokens_all = [tokenize(i) for i in documents]
 
-
+  #Globale set van unieke tokens
+  unique_tokens = sorted({token for i in tokens_all for token in i})
+  
+    #Token -> ID
+  token_to_id = {token: id for id, token in enumerate(unique_tokens)}
+  
+  #ID -> token
+  id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+  
+  #Convert every document to list of ID's
+  encoded_docs = [[token_to_id[token] for token in i] for i in tokens_all]
+  
+  return encoded_docs, token_to_id, id_to_token
+    
 # Test:
-text = "The quick brown fox jumps over the lazy dog!"
 enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
+" | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
+
 " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
 
 # -----------------------------------------------
@@ -313,6 +331,7 @@ def test_encode_sentences():
     ]
     enc, t2i, i2t = tokenize_and_encode(docs)
     assert " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == " | ".join(" ".join(tokenize(d)) for d in docs)
+test_encode_sentences()
 # -----------------------------------------------
 
 # In the following set of exercises you're going to implement an RNN from scratch. You'll also
@@ -335,12 +354,12 @@ sigmoid = lambda x: 1 / (1 + np.exp(-x))
 np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
 # -----------------------------------------------
 
-# -----------------------------------------------
 ## TEST
 def test_sigmoid():
   assert sigmoid.__name__ == '<lambda>', "sigmoid was not defined as a lambda expression"
   assert sigmoid(0) == 1/2
   assert np.abs(sigmoid(-np.log(np.arange(5,10))) - np.array([1/i for i in range(6,11)])).max() < 1e-12
+test_sigmoid()
 
 ################  O P T I O N A L  ##############
 
