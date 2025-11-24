@@ -177,16 +177,21 @@ def make_vocabulary_map(documents: list) -> tuple:
     return tokens
     
   #Use the function on the inputted list
-  tokens = [tokenize(i) for i in documents]
+  all_tokens = []
+  for doc in documents:
+        all_tokens.extend(tokenize(doc))
   
   #Global mapping
-  unique_tokens = sorted({token for i in tokens for token in i})
+  unique_tokens = []
+  for t in all_tokens:
+      if t not in unique_tokens:
+          unique_tokens.append(t)
   
   #Token -> ID
-  token_to_id = {token: id for id, token in enumerate(unique_tokens)}
+  token_to_id = {t: i for i, t in enumerate(unique_tokens)}
   
   #ID -> token
-  id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+  id_to_token = {i: t for t, i in token_to_id.items()}
 
   return token_to_id, id_to_token
   
@@ -237,7 +242,6 @@ def tokenize_and_encode(documents: list) -> list:
 # Test:
 enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
-
 " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
 
 # -----------------------------------------------
