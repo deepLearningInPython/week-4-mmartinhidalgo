@@ -18,8 +18,6 @@ import numpy as np
 # Tokenization is the process of breaking down sentences into these tokens. In this exercise, you’ll 
 # create a simple tokenizer to split a sentence into words and remove punctuation.
 
-
-
 # Task 1: Given a paragraph of text, implement a simple "tokenizer" that splits the paragraph 
 #   into individual words (tokens) and removes any punctuation. Implement this using a list 
 #   comprehension.
@@ -29,14 +27,11 @@ import numpy as np
 text = "The quick brown fox jumps over the lazy dog!"
 
 # Write a list comprehension to tokenize the text and remove punctuation
-tokens = _ # Your code here
+tokens = text.split()
 
 # Expected output: ['The', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog']
 print(tokens)
 # -----------------------------------------------
-
-
-
 
 # Task 2: Create a function that takes a string and breaks it up into tokens and removes any 
 #   punctuation, and then converts each token to lowercase. The function should returns unique 
@@ -45,12 +40,31 @@ print(tokens)
 # Your code here:
 # -----------------------------------------------
 def tokenize(string: str) -> list:
-    pass # Your code
+    split = string.strip("!?@#%&$^*(),").lower().split()
+    # .strip(): Remove interpunction
+    # .lower(): Convert each token to lowercase
+    # .split(): Split string into token
+    return(split)
+  
+def tokenize(string: str) -> list:
+    punctuation = "".join([c for c in string if not c.isalpha() and not c.isspace()])
+    # Delete all non-letters
+    cleaned = "".join([c for c in string if c.isalpha() or c.isspace()])
+    # Split & lowercase
+    tokens = [word.lower() for word in cleaned.split()]
+    return tokens
 
+tokenize("Hello, world!")           # ["hello", "world"]
+tokenize("HeLLo WoRLd")             # ["hello", "world"]
+tokenize("This, is a test!")        # ["this", "is", "a", "test"]
+tokenize("  Lots   of   spaces   ") # ["lots", "of", "spaces"]
+tokenize("")                        # []
+tokenize("!@#$%^&*()")              # []
+tokenize("Word")                    # ["word"]
+tokenize("Hello @#%& world!")       # ["hello", "world"]
+tokenize("Hello\nworld\tthis\tis\na test") # ["hello", "world", "this", "is", "a", "test"]
 
 # -----------------------------------------------
-
-
 
 # [B] Dictionary Comprehensions: Frequency Count of Tokens
 #     Objective: Practice dictionary comprehensions for token frequency counts.
@@ -64,8 +78,6 @@ def tokenize(string: str) -> list:
 # frequently might have different importance compared to rare words. In this exercise, you’ll 
 # create a dictionary where each word is a key and its frequency (count) is the value.
 
-
-
 # Task 3: Using the tokens list from the previous exercise, create a dictionary comprehension 
 #   that counts the frequency of each word.
 
@@ -74,15 +86,18 @@ def tokenize(string: str) -> list:
 
 # Your code here:
 # -----------------------------------------------
-word_frequencies = _ # Your code here
+text = "The quick brown fox jumps over the lazy dog!"
+word_frequencies = {word: text.lower().split().count(word) for word in sorted(text.split(), reverse = True)}
 
 # Expected output example: {'the': 2, 'quick': 1, ...}
 print(word_frequencies)
 
 # Modify the comprehension to include only words that appear more than once.
 # -----------------------------------------------
+words = text.lower().split()
+word_frequencies = {word: words.count(word) for word in sorted(words) if words.count(word) > 1}
 
-
+print(word_frequencies)
 
 # Task 4: Define a function that takes a string and an integer k, and returns a dictionary with
 #   the token frequencies of only those tokens that occur more than k times in the string.
@@ -90,15 +105,16 @@ print(word_frequencies)
 # Your code here:
 # -----------------------------------------------
 def token_counts(string: str, k: int = 1) -> dict:
-    pass # Your code
+  words = string.lower().split()
+  return {word: words.count(word) for word in sorted(words, reverse = True) if words.count(word) > k}
 
 # test:
 text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 1}
 all(text_hist[key] == value for key, value in token_counts(text).items())
+
+text = "The quick brown fox jumps over the lazy dog. The fox and the dog play together. The fox chases the dog, but the dog runs quickly. The fox is fast, and the dog escapes."
+token_counts(text, 1)
 # -----------------------------------------------
-
-
-
 
 # [C] Sets & Dictionary comprehension: Mapping unique tokens to numbers and vice versa
 #   Objective: Practice dictionary comprehensions and create mappings from tokens to unique 
@@ -113,27 +129,28 @@ all(text_hist[key] == value for key, value in token_counts(text).items())
 # These mappings are necessary for transforming text data into numerical data that models can 
 # process. In this exercise, you’ll use dictionary comprehensions to create these mappings.
 
-
-
 # Task 5: Given a list of tokens from Exercise 1, construct two dictionaries:
 #   `token_to_id`: a dictionary that maps each token to a unique integer ID.
 #   `id_to_token`: a dictionary that maps each unique integer ID back to the original token.
 
 # Your code here:
 # -----------------------------------------------
-token_to_id = _ # Your code here
+text = "The quick brown fox jumps over the lazy dog!"
+words = text.strip("!?@#%&$^*(),").lower().split()
+token_to_id = {word_id: id for id, word_id in enumerate(sorted(set(words)))}
 
 # Expected output: {'dog': 0, 'quick': 1, 'fox': 2, 'the': 3, 'over': 4, 'lazy': 5, 'brown': 6, 'jumps': 7}
 print(token_to_id)
 # -----------------------------------------------
 
-
-
 # Task 6: Define a dictionary that reverses the maping in `token2int`
 #
 # Your code here:
 # -----------------------------------------------
-id_to_token = _ # Your code here
+id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+
+token_to_id["lazy"]
+id_to_token[4]
 
 # tests: 
 # test 1
@@ -144,8 +161,6 @@ assert token_to_id[id_to_token[4]] == 4
 assert all(id_to_token[token_to_id[key]]==key for key in token_to_id) and all(token_to_id[id_to_token[k]]==k for k in range(len(token_to_id)))
 # -----------------------------------------------
 
-
-
 # Task 7: Define a function that will take a list of strings ('documents'), determines all the
 #   unique tokens across all documents, and returns two dictionaries: one (token2int) that maps 
 #   each unique token to a unique integer, and a dictionary (int2token) that maps each integer
@@ -154,15 +169,33 @@ assert all(id_to_token[token_to_id[key]]==key for key in token_to_id) and all(to
 # Your code here:
 # -----------------------------------------------
 def make_vocabulary_map(documents: list) -> tuple:
-    # Hint: use your tokenize function
-    pass # Your code
+  #Add tokenize() function that makes tokens out of sentence
+  def tokenize(documents: str) -> list:
+      punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
+      # Delete all non-letters
+      cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
+      # Split & lowercase
+      tokens = [word.lower() for word in cleaned.split()]
+      return tokens
+    
+  #Use the function on the inputted list
+  tokens = tokenize(documents[0])
+  
+  #Use already made dictionary comprehensions (token2int & int2token)
+  token_to_id = {word_id: id for id, word_id in enumerate(sorted(set(tokens)))}
+  id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+  return token_to_id, id_to_token
+
 
 # Test
+text = "The quick brown fox jumps over the lazy dog!"
 t2i, i2t = make_vocabulary_map([text])
+t2i
+i2t
+
 all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
+
 # -----------------------------------------------
-
-
 
 # Task 8: Define a function that will take in a list of strings ('documents') and a vocabulary
 #   dictionary token_to_id, that tokenizes each string in the list and returns a list with
@@ -174,19 +207,35 @@ all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 # Your code here:
 # -----------------------------------------------
 def tokenize_and_encode(documents: list) -> list:
-    # Hint: use your make_vocabulary_map and tokenize function
-    pass # Your code
+    #Add tokenize() function that makes tokens out of sentence
+    def tokenize(documents: str) -> list:
+        punctuation = "".join([c for c in documents if not c.isalpha() and not c.isspace()])
+        # Delete all non-letters
+        cleaned = "".join([c for c in documents if c.isalpha() or c.isspace()])
+        # Split & lowercase
+        tokens = [word.lower() for word in cleaned.split()]
+        return tokens
+    
+    enc = []
+    for i in range(len(documents)):
+      #Use the function on the inputted list
+      tokens = tokenize(documents[i])
+  
+      #Use already made dictionary comprehensions (token2int & int2token)
+      token_to_id = {word_id: id for id, word_id in enumerate(sorted(set(tokens)))}
+      id_to_token = {token_id: token for token, token_id in token_to_id.items()}
+      enc.append((tokens, token_to_id, id_to_token))
+    return enc
+
 
 # Test:
+text = "The quick brown fox jumps over the lazy dog!"
 enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
 # -----------------------------------------------
 
-
-
 # In the following set of exercises you're going to implement an RNN from scratch. You'll also
 # fit it to an existing time series.
-
 
 # [D] Using a lambda expression to define functions: One line definition of a function
 # Objective: practicing to work with lambda functions
@@ -194,14 +243,12 @@ enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 # You'll implement a RNN with the logistic (sigmoid) activation function for
 # the nodes. We need to implement this function first.
 
-
-
 # Task 9: use a lambda function to implement the logistic function using the np.exp
 #   function to work elementwise with numpy arrays
 
 # Your code here:
 # -----------------------------------------------
-sigmoid = _ # Your code
+sigmoid = lambda x: 1 / (1 + np.exp(-x))
 
 # Test:
 np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
@@ -264,7 +311,7 @@ np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
 #      • first initializing the hidden state  a  to zero (vector of the same size as a row of  X).
 #      • then, for each time step (each row in  X ) the hidden state  a[t] is updated using the RNN 
 #        formula:  a[t] = W  x[t] + U a[t-1].
-# 4. Compute Output: After processing all time steps of the sequence, the output value is
+# 4. Compute Output: After proce1ssing all time steps of the sequence, the output value is
 #      computed using final hidden state using the the equation o = B a[T] and is
 #      stored as the predicted output value for this sequence.
 # The return value is the vector of RNN output values (one value for each sequence in list_of_sequences).
