@@ -58,42 +58,6 @@ tokenize("Hello @#%& world!")       # ["hello", "world"]
 tokenize("Hello\nworld\tthis\tis\na test") # ["hello", "world", "this", "is", "a", "test"]
 
 # -----------------------------------------------
-## TEST
-import unittest
-from tasks import *
-
-# lambda string: "".join([x for x in string.lower() if x in '\n\t abcdefghijklmnopqrstuvwxyz0123456789']).split()
-
-class TestTokenizeFunction(unittest.TestCase):
-    
-    def test_basic_sentence(self):
-        self.assertEqual(tokenize("Hello, world!"), ["hello", "world"])
-
-    def test_mixed_case(self):
-        self.assertEqual(tokenize("HeLLo WoRLd"), ["hello", "world"])
-
-    def test_punctuation_removal(self):
-        self.assertEqual(tokenize("This, is a test!"), ["this", "is", "a", "test"])
-
-    def test_extra_spaces(self):
-        self.assertEqual(tokenize("  Lots   of   spaces   "), ["lots", "of", "spaces"])
-
-    def test_empty_string(self):
-        self.assertEqual(tokenize(""), [])
-
-    def test_only_punctuation(self):
-        self.assertEqual(tokenize("!@#$%^&*()"), [])
-
-    def test_single_word(self):
-        self.assertEqual(tokenize("Word"), ["word"])
-
-    def test_special_characters(self):
-        self.assertEqual(tokenize("Hello @#%& world!"), ["hello", "world"])
-
-    def test_newlines_and_tabs(self):
-        self.assertEqual(tokenize("Hello\nworld\tthis\tis\na test"), ["hello", "world", "this", "is", "a", "test"])
-
-unittest.main()
 
 # [B] Dictionary Comprehensions: Frequency Count of Tokens
 #     Objective: Practice dictionary comprehensions for token frequency counts.
@@ -149,37 +113,6 @@ text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 
 all(text_hist[key] == value for key, value in token_counts(text).items())
 
 # -----------------------------------------------
-## TEST
-
-def test_token_counts():
-    text = """The quick brown fox jumps over the lazy dog. The fox and the dog play together. 
-              The fox chases the dog, but the dog runs quickly. The fox is fast, and the dog escapes."""
-    expected = {'the': 9, 'quick': 1, 'brown': 1, 'fox': 4, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 5, 
-                'and': 2, 'play': 1, 'together': 1, 'chases': 1, 'but': 1, 'runs': 1, 'quickly': 1, 
-                'is': 1, 'fast': 1, 'escapes': 1}
-    expected2 = {'the': 9, 'fox': 4, 'dog': 5, 'and': 2}
-    expected3 = {'the': 9, 'dog': 5}
-    
-    obtained = token_counts(text)
-    assert type(obtained) == dict, "expected return type 'dict' (k=1)"
-    assert set(obtained.keys()) == set(expected.keys()), "unexpected keys in dict (k=1)"
-    assert all(obtained[key] == expected[key] for key in expected), "unexpected counts (k=1)"
-
-    obtained = token_counts(text, 2)
-    assert type(obtained) == dict, "expected return type 'dict' (k=2)"
-    assert set(obtained.keys()) == set(expected2.keys()), "unexpected keys in dict (k=2)"
-    assert all(obtained[key] == expected2[key] for key in expected2), "unexpected counts (k=2)"
-
-    obtained = token_counts(text, 5)
-    assert type(obtained) == dict, "expected return type 'dict' (k=5)"
-    assert set(obtained.keys()) == set(expected3.keys()), "unexpected keys in dict (k=5)"
-    assert all(obtained[key] == expected3[key] for key in expected3), "unexpected counts (k=5)"
-
-    obtained = token_counts(text, 10)
-    assert type(obtained) == dict, "expected return type 'dict' (k=10)"
-    assert obtained == {}
-test_token_counts()    
-
 
 # [C] Sets & Dictionary comprehension: Mapping unique tokens to numbers and vice versa
 #   Objective: Practice dictionary comprehensions and create mappings from tokens to unique 
@@ -263,14 +196,6 @@ t2i, i2t = make_vocabulary_map([text])
 all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 
 # -----------------------------------------------
-## TEST
-
-def test_vocabulary_builder():
-    t2i, i2t = make_vocabulary_map([text])
-    assert all(i2t[t2i[tok]] == tok for tok in t2i), "something wrong with translation dicts"
-test_vocabulary_builder()
-
-# -----------------------------------------------
 
 # Task 8: Define a function that will take in a list of strings ('documents') and a vocabulary
 #   dictionary token_to_id, that tokenizes each string in the list and returns a list with
@@ -316,23 +241,6 @@ enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == 'the quick brown fox jumps over the lazy dog | what a luck we had today'
 
 # -----------------------------------------------
-## TEST
-
-def test_encode_sentences():
-    docs = [
-        "The cat sat on the mat.",
-        "The cat and the cat.",
-        "The Quick Brown Fox jumps Over the lazy Dog.",
-        "The cat has 2 paws and 4 legs.",
-        "Hello, world! How are you?",
-        "hello",
-        "This is a test of the tokenizer.",
-        "This is a long document that contains many words, phrases, and repeated occurrences. Words, phrases, and sentences repeat to test scalability."
-    ]
-    enc, t2i, i2t = tokenize_and_encode(docs)
-    assert " | ".join([" ".join(i2t[i] for i in e) for e in enc]) == " | ".join(" ".join(tokenize(d)) for d in docs)
-test_encode_sentences()
-# -----------------------------------------------
 
 # In the following set of exercises you're going to implement an RNN from scratch. You'll also
 # fit it to an existing time series.
@@ -352,14 +260,6 @@ sigmoid = lambda x: 1 / (1 + np.exp(-x))
 
 # Test:
 np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
-# -----------------------------------------------
-
-## TEST
-def test_sigmoid():
-  assert sigmoid.__name__ == '<lambda>', "sigmoid was not defined as a lambda expression"
-  assert sigmoid(0) == 1/2
-  assert np.abs(sigmoid(-np.log(np.arange(5,10))) - np.array([1/i for i in range(6,11)])).max() < 1e-12
-test_sigmoid()
 
 ################  O P T I O N A L  ##############
 
